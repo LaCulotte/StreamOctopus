@@ -1,25 +1,30 @@
-import WebSocket from "ws";
 import { Core } from "./core";
+
+import WebSocket from "ws";
 
 export class App {
     connection : WebSocket;
     id : string;
+    description: string;
     type : string;
     core: Core;
 
     endCallback : (app: App) => any;
     
-    constructor(core: Core, wsConnection: WebSocket, id : string, type: string, endCallback : (app: App) => any) {
+    constructor(core: Core, wsConnection: WebSocket, id : string, type: string, description: string, endCallback : (app: App) => any) {
         this.core = core;
         this.connection = wsConnection;
-        this.type = type;
+        
         this.id = id;
+        this.type = type;
+        this.description = description;
+
         this.endCallback = endCallback;
 
         try {            
-            this.connection.onmessage = (event) => {
-                console.log(`[${this.logHeader}] New message : ${event.data.toString()}`);
-            };
+            // this.connection.onmessage = (event) => {
+            //     console.log(`[${this.logHeader}] New message : ${event.data.toString()}`);
+            // };
             
             this.connection.onclose = this.onWSClose.bind(this);
             this.connection.onmessage = this.onMessage.bind(this);
@@ -31,28 +36,44 @@ export class App {
     }
 
     onMessage(msgEvent : WebSocket.MessageEvent) {
-        console.log("New message : ");
-        console.log(msgEvent.data.toString());
-        let message = JSON.parse(msgEvent.data.toString());
+        try {
+            console.log("New message : ");
+            console.log(msgEvent.data.toString());
+            let message = JSON.parse(msgEvent.data.toString());
 
-        switch(message.type.toLowerCase()) {
-        case "broadcast":
-            console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
-            this.core.broadcast(this.id, message.channel, message.data);
-            break;
+            // TODO : Check for id
 
-        case "subscribe":
-            console.log(`[${this.logHeader}] Subscribing to broadcast ${message.channel}`);
-            this.core.subscribe(this.id, message.channel);
-            break;
-            
-        case "sendTo":
-            console.log(`[${this.logHeader}] sending message to ${message.dst}`);
-            this.core.sendTo(this.id, message.dst, message.data);
-            break;
-            
-        default:
-            console.error(`[${this.logHeader}] Unknown message type received : ${message.type}`);
+            switch(message.type.toLowerCase()) {
+            case "core":
+                this.core.processCoreMessage(this.id, message);
+                break;
+                
+            case "broadcast":
+                console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+                this.core.sendBroadcast(this.id, message.channel, message);
+                break;
+
+            // case "pipeline":
+            //     console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+            //     this.core.broadcast(this.id, message.channel, message);
+            //     break;
+
+            // case "pipelineReturn":
+            //     console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+            //     this.core.broadcast(this.id, message.channel, message);
+            //     break;
+
+            case "direct":
+                console.log(`[${this.logHeader}] sending message to ${message.dst}`);
+                this.core.sendDirect(this.id, message);
+                break;
+                
+            default:
+                console.error(`[${this.logHeader}] Unknown message type received : ${message.type}`);
+                break;
+            }
+        } catch (exception) {
+            console.log(`[${this.logHeader}] Caught exception while reading incoming message : ${exception}. Incoming message : ${msgEvent.data.toString()}`);
         }
     }
 

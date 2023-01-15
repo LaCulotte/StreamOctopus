@@ -14,6 +14,7 @@
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "@types/yargs": "^17.0.10",
+    "package.json": "^2.0.1",
     "ts-node": "^10.8.1",
     "uuid": "^8.3.2",
     "ws": "^8.8.0",
