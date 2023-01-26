@@ -4,23 +4,38 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "tsc -p ./src/tsconfig.json"
+    "prepare": "npm run octopus-app-symlink",
+    "octopus-app-symlink": "run-script-os",
+    "octopus-app-symlink:windows": ".\\scripts\\symlink-win.cmd",
+    "octopus-app-symlink-ok": "mkdir %cd%\\serverFiles\\dist\\octopus-app\\ && powershell -c \"Start-Process -File powershell \\\"new-item -itemtype symboliclink -path %cd%/serverFiles/dist/octopus-app/ -name bundle.js -value %cd%/node_modules/octopus-app/browserify/dist.js\\\" -Verb RunAs\"",
+    "octopus-app-symlink:unix": "ln -s './node_modules/octopus-app/browserify/dist.js' './serverFiles/dist/octopus-app/bundle.js'",
+    "start": "npx ts-node src/main.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/express": "^4.17.16",
     "@types/node": "^18.0.0",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
     "@types/yargs": "^17.0.10",
-    "package.json": "^2.0.1",
+    "dgram": "^1.0.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "octopus-app": "^1.0.0",
+    "run-script-os": "^1.1.6",
     "ts-node": "^10.8.1",
+    "typescript": "^4.9.4",
     "uuid": "^8.3.2",
     "ws": "^8.8.0",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
-    "typescript": "^4.7.4"
-  }
+    "octopus-app": "file:../octopus-app"
+  },
+  "files": [
+    "./src/",
+    "./serverFiles/app/",
+    "./scripts"
+  ]
 }

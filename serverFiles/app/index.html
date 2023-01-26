@@ -1,0 +1,22 @@
+<html>
+    <head>
+        <script src="/dist/octopus-app/bundle.js"></script>
+        <script src="/ui/WebApp.js"></script>
+        <script src="/ui/api.js"></script>
+    </head>
+    <body>
+        <p>
+            <label for="addressInput">Octopus Stream address</label>
+            <input type="text" id="addressInput">
+        </p>
+        <input type="button" value="Connect !" onclick="connect()">
+        <ul id="appList">
+        </ul>
+        <input type="button" value="Refresh list" id="refreshButton" onclick="refreshAppList()" hidden>
+        <canvas id="test" style="width: 100%; height: 300px;"></canvas>
+    </body>
+    <footer>
+        <script src="/ui/index.js"></script>
+    </footer>
+</html>
+<script src="/ui/backend.js"></script>

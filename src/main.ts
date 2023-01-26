@@ -1,20 +1,32 @@
 import { Core } from "./core";
-import { WebSocketServer } from "./WSServer";
 import yargs from "yargs";
 
 const argv = yargs
-    .option("port", {
-        alias: "p",
-        description: "Octopus server's port.",
+    .option("websocket-port", {
+        alias: "wp",
+        description: "Octopus websocket server's port.",
         type: "number",
         default: 8000
+    }).option("http-port", {
+        alias: "hp",
+        description: "Octopus http server's port.",
+        type: "number",
+        default: 80
+    }).option("broadcast-port", {
+        alias: "bp",
+        description: "Octopus server's broadcast port to signal itself to apps.",
+        type: "number",
+        default: 3000
     })
     .help()
     .argv;
 
 // @ts-ignore
-let port: number = argv.port;
+let wsPort: number = argv["websocket-port"];
+// @ts-ignore
+let httpPort: number = argv["http-port"];
+// @ts-ignore
+let udpPort: number = argv["broadcast-port"];
 
-let core = new Core();
-let test = new WebSocketServer(core, port);
-test.launch();
+let core = new Core(wsPort, httpPort, udpPort);
+core.launch();

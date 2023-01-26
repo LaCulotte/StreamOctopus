@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <script src="/dist/octopus-app/bundle.js"></script>
+        <script src="/ui/WebApp.js"></script>
+    </head>
+    <body>
+        <p>
+            App : <span id="appType"></span> - Desc : <span id="appDesc"></span> (ID : <span id="appId"></span>)
+        </p>
+        <div id="errorDiv"></div>
+        <div id="configDiv">
+        </div>
+        <!-- <textarea style="width: 100%; height: 200px;" id="configArea" ></textarea> -->
+        <p>
+            <input type="button" value="Refresh config" id="refreshButton" onclick="fetchConfig()">
+            <input type="button" value="Set config" id="refreshButton" onclick="writeConfig()">
+        </p>
+    </body>
+    <footer>
+        <script src="/ui/config/ConfigTree.js"></script>
+        <script src="/ui/config/config.js"></script>
+    </footer>
+</html>
+<script src="/ui/backend.js"></script>
