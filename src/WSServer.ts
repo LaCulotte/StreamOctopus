@@ -10,6 +10,8 @@ export class WebSocketServer {
 
     core : Core;
 
+    pingInterval: NodeJS.Timer = undefined;
+
     constructor(core : Core, port: number) {
         this.core = core;
         this.port = port;
@@ -18,6 +20,11 @@ export class WebSocketServer {
     launch() {
         this.server = new WebSocket.Server({ port: this.port }, () => {console.log(`[${this.logHeader}] Listening on port ${this.port}.`)});
         this.server.on("connection", (socket, req) => { this.onConnection(socket, req); })
+
+        if (this.pingInterval != undefined) 
+            clearInterval(this.pingInterval);
+
+        setInterval(this.heartbeat.bind(this), 5000);
     }
 
     onConnection(socket : WebSocket, req : IncomingMessage) {
@@ -25,6 +32,9 @@ export class WebSocketServer {
         
         socket.onmessage = this.firstOnMessage.bind(this);
         socket.onclose = (event) => { console.log(`[${this.logHeader}] Connection closed before receiving first message.`); this.pendingWs.delete(socket); };
+        // @ts-ignore
+        socket.isAlive = true;
+        socket.on("pong", this.hearbeat_pong);
     }
 
     firstOnMessage(messageEvent : WebSocket.MessageEvent) {
@@ -54,6 +64,24 @@ export class WebSocketServer {
         sourceSocket.onmessage = null;
 
         this.core.addApp(data, sourceSocket);
+    }
+
+    heartbeat() {
+        if(this.server != undefined) {
+            this.server.clients.forEach((socket) => {
+                // @ts-ignore
+                if(socket.isAlive === false) return socket.terminate();
+                
+                // @ts-ignore
+                socket.isAlive = false;
+                socket.ping();
+            });
+        }
+    }
+
+    hearbeat_pong() {
+        // @ts-ignore
+        this.isAlive = true;
     }
 
     get logHeader() {

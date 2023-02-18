@@ -8,7 +8,7 @@
     "octopus-app-symlink": "run-script-os",
     "octopus-app-symlink:windows": ".\\scripts\\symlink-win.cmd",
     "octopus-app-symlink-ok": "mkdir %cd%\\serverFiles\\dist\\octopus-app\\ && powershell -c \"Start-Process -File powershell \\\"new-item -itemtype symboliclink -path %cd%/serverFiles/dist/octopus-app/ -name bundle.js -value %cd%/node_modules/octopus-app/browserify/dist.js\\\" -Verb RunAs\"",
-    "octopus-app-symlink:unix": "mkdir -p ./serverFiles/dist/octopus-app/ && sudo ln -s './node_modules/octopus-app/browserify/dist.js' './serverFiles/dist/octopus-app/bundle.js'",
+    "octopus-app-symlink:linux": "mkdir -p ./serverFiles/dist/octopus-app/ && sudo ln -s './node_modules/octopus-app/browserify/dist.js' './serverFiles/dist/octopus-app/bundle.js'",
     "start": "npx ts-node src/main.ts"
   },
   "author": "",
