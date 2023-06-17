@@ -33,7 +33,7 @@ export class WebSocketServer {
         socket.onmessage = this.firstOnMessage.bind(this);
         socket.onclose = (event) => { console.log(`[${this.logHeader}] Connection closed before receiving first message.`); this.pendingWs.delete(socket); };
         // @ts-ignore
-        socket.isAlive = true;
+        socket.isAlive = 5;
         socket.on("pong", this.hearbeat_pong);
     }
 
@@ -70,10 +70,10 @@ export class WebSocketServer {
         if(this.server != undefined) {
             this.server.clients.forEach((socket) => {
                 // @ts-ignore
-                if(socket.isAlive === false) return socket.terminate();
+                if(socket.isAlive <= 0) return socket.terminate();
                 
                 // @ts-ignore
-                socket.isAlive = false;
+                socket.isAlive -= 1;
                 socket.ping();
             });
         }
@@ -81,7 +81,7 @@ export class WebSocketServer {
 
     hearbeat_pong() {
         // @ts-ignore
-        this.isAlive = true;
+        this.isAlive = 5;
     }
 
     get logHeader() {

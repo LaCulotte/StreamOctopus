@@ -31,7 +31,7 @@ export class Core {
         this.wsServer = new WebSocketServer(this, this.wsPort);
 
         this.httpPort = httpPort;
-        this.setupHTTPServer();        
+        this.setupHTTPServer();
         // this.httpServer = new HTTPServer(this, this.httpPort);
 
         this.udpPort = udpPort;
@@ -53,13 +53,13 @@ export class Core {
             try {
                 req.body.id = "temp";
                 this.sendDirect("temp", req.body);
-    
+                
                 res.sendStatus(200);
             } catch (err) {
                 res.sendStatus(400).send({reason: err});
             }
         });
-
+        
         this.httpApp.post("/api/broadcast", (req, res) => {
             try {
                 req.body.id = "temp";
@@ -143,7 +143,7 @@ export class Core {
             console.error(`[${this.logHeader}] Got 'core' message from unknown app of id ${appId}. Not processing message.`);
             return;
         }
-        
+
         let content = message.content;
         if (!content || !content.type) {
             console.error(`[${this.logHeader}] Got 'core' message with invalid content (${JSON.stringify(content)}). Not processing message.`);
@@ -187,12 +187,12 @@ export class Core {
         try {
             if(channel === undefined)
                 return;
-    
+
             if(!this.broadcastChannels.has(channel))
                 this.broadcastChannels.set(channel, new BroadcastChannel(channel, this));
-    
+
             this.broadcastChannels.get(channel)?.subscribe(appId, src);
-    
+
             this.sendCore(appId, msgId, {type: "subscribeBroadcastReturn", status: "OK"});
         } catch(exception) {
             console.error(`[${this.logHeader}] Could not subscribe ${appId} to ${channel} : ${exception}.`);
@@ -217,8 +217,8 @@ export class Core {
 
     returnApp(dstAppId: string, msgId: string, appId: string) {
         let app = this.apps.get(appId);
-        let appRet = {}
-        
+        let appRet = {};
+
         if(app) {
             appRet = {
                 "id": app.id,
@@ -226,7 +226,7 @@ export class Core {
                 "desc": app.description
             }
         }
-        
+
         this.sendCore(dstAppId, msgId, appRet);
     }
 
