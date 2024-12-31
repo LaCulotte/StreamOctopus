@@ -1,4 +1,5 @@
 import { Core } from "./core";
+import { logger } from "./logger";
 
 import WebSocket from "ws";
 
@@ -21,9 +22,9 @@ export class App {
 
         this.endCallback = endCallback;
 
-        try {            
+        try {
             // this.connection.onmessage = (event) => {
-            //     console.log(`[${this.logHeader}] New message : ${event.data.toString()}`);
+            //     logger.info(`[${this.logHeader}] New message : ${event.data.toString()}`);
             // };
             
             this.connection.onclose = this.onWSClose.bind(this);
@@ -32,13 +33,14 @@ export class App {
             this.connection.send('{"type": "init", "data": "OK"}');
         } catch(e) {
             this.connection.send(`{"type": "init", "data": ${e}}`);
+            this.connection.close();
         }
     }
 
     onMessage(msgEvent : WebSocket.MessageEvent) {
         try {
-            console.log("New message : ");
-            console.log(msgEvent.data.toString());
+            logger.info("New message : ");
+            logger.info(msgEvent.data.toString());
             let message = JSON.parse(msgEvent.data.toString());
 
             // TODO : Check for id
@@ -49,36 +51,36 @@ export class App {
                 break;
                 
             case "broadcast":
-                console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+                logger.info(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
                 this.core.sendBroadcast(this.id, message.channel, message);
                 break;
 
             // case "pipeline":
-            //     console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+            //     logger.info(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
             //     this.core.broadcast(this.id, message.channel, message);
             //     break;
 
             // case "pipelineReturn":
-            //     console.log(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
+            //     logger.info(`[${this.logHeader}] Broadcasting message to ${message.channel}`);
             //     this.core.broadcast(this.id, message.channel, message);
             //     break;
 
             case "direct":
-                console.log(`[${this.logHeader}] sending message to ${message.dst}`);
+                logger.info(`[${this.logHeader}] sending message to ${message.dst}`);
                 this.core.sendDirect(this.id, message);
                 break;
                 
             default:
-                console.error(`[${this.logHeader}] Unknown message type received : ${message.type}`);
+                logger.error(`[${this.logHeader}] Unknown message type received : ${message.type}`);
                 break;
             }
         } catch (exception) {
-            console.log(`[${this.logHeader}] Caught exception while reading incoming message : ${exception}. Incoming message : ${msgEvent.data.toString()}`);
+            logger.info(`[${this.logHeader}] Caught exception while reading incoming message : ${exception}. Incoming message : ${msgEvent.data.toString()}`);
         }
     }
 
     onWSClose(closeEvent: WebSocket.CloseEvent) {
-        console.log(`[${this.logHeader}] WebSocket closed. Code : ${closeEvent.code}; Reason : ${closeEvent.reason}.`);
+        logger.info(`[${this.logHeader}] WebSocket closed. Code : ${closeEvent.code}; Reason : ${closeEvent.reason}.`);
         this.endCallback(this);
     }
 

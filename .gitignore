@@ -3,3 +3,6 @@ settings.json
 package-lock.json
 build
 serverFiles/dist
+.vscode
+logs
+

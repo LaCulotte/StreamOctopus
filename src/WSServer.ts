@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import { IncomingMessage } from "http";
 import { Core } from "./core";
+import { logger } from "./logger";
 
 export class WebSocketServer {
     pendingWs : Set<WebSocket> = new Set<WebSocket>();
@@ -18,7 +19,7 @@ export class WebSocketServer {
     }
 
     launch() {
-        this.server = new WebSocket.Server({ port: this.port }, () => {console.log(`[${this.logHeader}] Listening on port ${this.port}.`)});
+        this.server = new WebSocket.Server({ port: this.port }, () => {logger.info(`[${this.logHeader}] Listening on port ${this.port}.`)});
         this.server.on("connection", (socket, req) => { this.onConnection(socket, req); })
 
         if (this.pingInterval != undefined) 
@@ -28,10 +29,10 @@ export class WebSocketServer {
     }
 
     onConnection(socket : WebSocket, req : IncomingMessage) {
-        console.log(`[${this.logHeader}] New app incoming.`);
+        logger.info(`[${this.logHeader}] New app incoming.`);
         
         socket.onmessage = this.firstOnMessage.bind(this);
-        socket.onclose = (event) => { console.log(`[${this.logHeader}] Connection closed before receiving first message.`); this.pendingWs.delete(socket); };
+        socket.onclose = (event) => { logger.info(`[${this.logHeader}] Connection closed before receiving first message.`); this.pendingWs.delete(socket); };
         // @ts-ignore
         socket.isAlive = 5;
         socket.on("pong", this.hearbeat_pong);
@@ -40,22 +41,22 @@ export class WebSocketServer {
     firstOnMessage(messageEvent : WebSocket.MessageEvent) {
         try {
             let data = JSON.parse(messageEvent.data.toString());
-            console.log(`[${this.logHeader}] Received First message : ${JSON.stringify(data)}`);
+            logger.info(`[${this.logHeader}] Received First message : ${JSON.stringify(data)}`);
             switch(data.type) {
                 case "init":
                     this.onInitData(data, messageEvent.target);
                     return;
                     break;
                 default:
-                    console.error(`[${this.logHeader}] First message's type was not init! Closing connection.`);
+                    logger.error(`[${this.logHeader}] First message's type was not init! Closing connection.`);
                     break;
             }
         } catch(e) {
-            console.error(`[${this.logHeader}] Caught exception while reading app's first message : ${e}. Closing connection.`);
+            logger.error(`[${this.logHeader}] Caught exception while reading app's first message : ${e}. Closing connection.`);
         }
+        // This code should be in a function/directly in fail case
         messageEvent.target.close();
         this.pendingWs.delete(messageEvent.target);
-
     }
 
     onInitData(data : any, sourceSocket : WebSocket) {

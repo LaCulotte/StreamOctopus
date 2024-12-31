@@ -1,4 +1,5 @@
 import { App } from "./app";
+import { logger } from "./logger";
 import { BroadcastChannel } from "./utils/broadcastChannel";
 
 import { v4 } from "uuid"
@@ -39,6 +40,7 @@ export class Core {
     }
 
     setupHTTPServer() {
+        // TODO : in own class
         this.httpApp = express();
         this.httpApp.use(express.json());
         
@@ -75,7 +77,7 @@ export class Core {
     launch() {
         this.wsServer.launch();
         this.httpServer = this.httpApp.listen(this.httpPort, () => { 
-            console.log(`Listening http on port ${this.httpPort}`) ;
+            logger.info(`Listening http on port ${this.httpPort}`) ;
         });
         // this.httpServer.launch();
 
@@ -107,7 +109,7 @@ export class Core {
 
     addApp(data : any, sourceSocket : WebSocket) {
         if(!data.app || !data.app.type) {
-            console.error(`[${this.logHeader}] First message did not contain app's type! Closing connection`);
+            logger.error(`[${this.logHeader}] First message did not contain app's type! Closing connection`);
             sourceSocket.close();
             return;
         }
@@ -117,12 +119,12 @@ export class Core {
         let id = v4();
         let newApp = new App(this, sourceSocket, id, appType, description, this.onAppEnd.bind(this));
         
-        console.log(`[${this.logHeader}] New app is connected. Type : ${appType}; id : ${id}.`);
+        logger.info(`[${this.logHeader}] New app is connected. Type : ${appType}; id : ${id}.`);
         this.apps.set(id, newApp);
     }
     
     onAppEnd(app: App) {
-        console.log(`[${this.logHeader}] App disconnected. Type : ${app.type}; id : ${app.id}.`);
+        logger.info(`[${this.logHeader}] App disconnected. Type : ${app.type}; id : ${app.id}.`);
         this.apps.delete(app.id);
 
         let channelsToRemove: string[] = [];
@@ -140,13 +142,13 @@ export class Core {
     processCoreMessage(appId: string, message: any) {
         let app = this.getApp(appId);
         if (!app) {
-            console.error(`[${this.logHeader}] Got 'core' message from unknown app of id ${appId}. Not processing message.`);
+            logger.error(`[${this.logHeader}] Got 'core' message from unknown app of id ${appId}. Not processing message.`);
             return;
         }
 
         let content = message.content;
         if (!content || !content.type) {
-            console.error(`[${this.logHeader}] Got 'core' message with invalid content (${JSON.stringify(content)}). Not processing message.`);
+            logger.error(`[${this.logHeader}] Got 'core' message with invalid content (${JSON.stringify(content)}). Not processing message.`);
             return;
         }
 
@@ -155,11 +157,6 @@ export class Core {
                 this.launchBroadcast(content.interval);
                 break;
 
-            default:
-                break;
-        }
-
-        switch(content.type.toLowerCase()) {
             case "subscribebroadcast":
                 this.subscribeToBroadcast(appId, message.id, content.channel, content.src);
                 break;
@@ -177,15 +174,16 @@ export class Core {
                 break;
 
             default:
-                console.warn(`[${this.logHeader}] Unkown 'core' message type : ${content.type}.`);
+                logger.warn(`[${this.logHeader}] Unkown 'core' message type : ${content.type}.`);
                 break;
         }
     }
 
     subscribeToBroadcast(appId: string, msgId: string, channel: string, src: string = undefined) {
-        console.log(`[${this.logHeader}] Subscribing to broadcast ${channel}`);
+        logger.info(`[${this.logHeader}] Subscribing to broadcast ${channel}`);
         try {
             if(channel === undefined)
+                // TODO : error message
                 return;
 
             if(!this.broadcastChannels.has(channel))
@@ -195,7 +193,7 @@ export class Core {
 
             this.sendCore(appId, msgId, {type: "subscribeBroadcastReturn", status: "OK"});
         } catch(exception) {
-            console.error(`[${this.logHeader}] Could not subscribe ${appId} to ${channel} : ${exception}.`);
+            logger.error(`[${this.logHeader}] Could not subscribe ${appId} to ${channel} : ${exception}.`);
             this.sendCore(appId, msgId, {type: "subscribeBroadcastReturn", status: JSON.stringify(exception)});
         }
     }
@@ -231,7 +229,7 @@ export class Core {
     }
 
     updateDescription(appId: string, desc : string) {
-        console.log(`[${this.logHeader}] Updating description of app ${appId} : ${desc}`)
+        logger.info(`[${this.logHeader}] Updating description of app ${appId} : ${desc}`)
 
         let app = this.apps.get(appId);
         if(!app)
