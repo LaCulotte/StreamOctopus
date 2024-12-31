@@ -1,7 +1,8 @@
 var appId = undefined;
 var webApp = undefined;
 
-var configTree = undefined;
+// var configTree = undefined;
+var editor = undefined;
 
 function setup() {
     const url = new URL(window.location.href);
@@ -44,17 +45,14 @@ function fetchConfigSchema() {
     });
 
     webApp.sendDirect(appId, {
-        type: "getConfigSchema",
+        request: "getConfigSchema",
     }, true).then((message) => {
-        if (message.content.success) {
-            // document.getElementById("configArea").value = JSON.stringify(message.content.configSchema);
-            configTree = new ConfigTree(message.content.configSchema);
-        } else {
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config schema : ${message.content.reason}`;
-            configTree = new ConfigTree();
-        }
-
-        fetchConfig();
+        // document.getElementById("configArea").value = JSON.stringify(message.content.configSchema);
+        // configTree = new ConfigTree(message.content.configSchema);
+        editor = new JSONEditor(document.getElementById("configDiv"), {  schema: message.content.configSchema, theme: 'bootstrap4' });
+        editor.on("ready", () => {
+            fetchConfig();
+        });
     }).catch((err) => {
         if(typeof(err) == "string")
             document.getElementById("errorDiv").innerHTML =  `Could not get app config schema : ${err}`;
@@ -65,16 +63,12 @@ function fetchConfigSchema() {
 
 function fetchConfig() {
     webApp.sendDirect(appId, {
-        type: "getConfig",
+        request: "getConfig",
     }, true).then((message) => {
-        if (message.content.success) {
             // document.getElementById("configArea").value = JSON.stringify(message.content.configSchema);
-            configTree.fill(message.content.config);
-        } else {
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config : ${message.content.reason}`;
-        }
-        document.getElementById("configDiv").innerHTML = "";
-        document.getElementById("configDiv").appendChild(configTree.render());
+        // configTree.fill(message.content.config);
+        // document.getElementById("configDiv").appendChild(configTree.render());
+        editor.setValue(message.content.config);
     }).catch((err) => {
         if(typeof(err) == "string")
             document.getElementById("errorDiv").innerHTML =  `Could not get app config : ${err}`;
@@ -84,10 +78,10 @@ function fetchConfig() {
 }
 
 function writeConfig() {
-    // console.log(configTree.getConfig());
+    console.log(editor.getValue());
     webApp.sendDirect(appId, {
-        type: "setConfig",
-        config: configTree.getConfig()
+        request: "setConfig",
+        config: editor.getValue()
     }, false);
 }
 

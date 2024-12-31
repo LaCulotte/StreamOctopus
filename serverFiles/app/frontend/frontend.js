@@ -90,6 +90,6 @@ webApp.parent_onDirect = webApp.onDirect;
 if(webApp.connected) {
     setupWebApp();
 } else {
-    webApp.oninit = setupWebApp;
+    // webApp.oninit = setupWebApp;
     webApp.connect(`ws://${window.location.host}:8000`);
 }

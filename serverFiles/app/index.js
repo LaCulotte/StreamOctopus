@@ -2,27 +2,7 @@
  * @typedef {import("./WebApp")} WebOctopusApp
  */
 
-// var mutationObserver = new MutationObserver(function(mutations) {
-//     mutations.forEach(function(mutation) {
-//         console.log(mutation)
-//     });
-// });
-
-// mutationObserver.observe(document.documentElement, {
-//     attributes: true,
-//     characterData: true,
-//     childList: true,
-//     subtree: true,
-//     attributeOldValue: true,
-//     characterDataOldValue: true
-// });
-
 var webApp = new WebOctopusApp(undefined);
-fetch("/api/ip", {method: "POST"})
-    .then(response => response.text())
-    .then(data => {
-        // webApp.updateDescription(data);
-    });
 
 document.getElementById("addressInput").value = `ws://${window.location.hostname}:8000`
 
@@ -33,7 +13,6 @@ function connect() {
         document.getElementById("refreshButton").hidden = false;
     }
 
-    // webApp.url = document.getElementById("addressInput").value;
     webApp.connect(document.getElementById("addressInput").value); 
 }
 
