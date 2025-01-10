@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+        <link href="/ui/lib/style.css" rel="stylesheet" />
+        <link href="led-strip.css" rel="stylesheet" />
+
+        <link rel="icon" type="image/png" href="/ui/favicon/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/ui/favicon/favicon.svg" />
+        <link rel="shortcut icon" href="/ui/favicon/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/ui/favicon/apple-touch-icon.png" />
+        <link rel="manifest" href="/ui/favicon/site.webmanifest" />
+
+        <title>Led config</title>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center mb-4">Led config</h1>
+
+            <!-- Sélection de l'appareil -->
+            <h4 id="octopus-status">Idle</h4>
+            <div class="form-group">
+                <label for="device-select">Sélectionnez un appareil :</label>
+                <div class="container">
+                    <div class="row-lg-custom">
+                        <!-- <div class="col"> -->
+                        <!--     <select class="form-select" id="deviceSelect"> -->
+                        <!--         <option disabled selected>Choisir un appareil</option> -->
+                        <!--         <option>Appareil 1</option> -->
+                        <!--         <option>Appareil 2</option> -->
+                        <!--         <option>Appareil 3</option> -->
+                        <!--     </select> -->
+                        <!-- </div> -->
+                        <!-- <div class="xs-only" style="margin: 0.5vh;"></div> -->
+                        <!-- <div class="row col-lg-custom buttons-custom gx-5"> -->
+                        <!--     <button class="btn btn-primary col" id="refreshDeviceList">Rafraîchir</button> -->
+                        <!--     <button class="btn btn-success col" id="selectDevice">Sélectionner</button> -->
+                        <!-- </div> -->                    
+                        <div class="input-group row col-lg-6-custom gx-5">
+                            <button class="btn btn-secondary" id="refresh-btn" style="width: 10ch;">Rafraîchir</button>
+                            <select class="form-select" id="app-select">
+                                <option disabled selected>Choisir un appareil</option>
+                            </select>
+                        </div>
+                        <div style="margin: 0.5vh;"></div>
+                        <div class="col-lg-2-custom col-xs-custom buttons-custom">
+                            <button class="btn btn-primary" id="select-btn">Sélectionner</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content" hidden>
+                <!-- Configuration de la couleur -->
+                <div>
+                    <label for="color-picker">Configurer une couleur :</label>
+                    <div class="container row">
+                        <div class="col-lg-custom">
+                            <div id="color-picker" class="color-picker-style"></div>
+                        </div>
+                        <div class="col-lg-custom" style="align-content: center">
+                            <div id="color-preview" class="color-preview-style"></div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text" id="red-text">R</span>
+                        <input type="number" class="form-control" placeholder="Red" aria-label="Red" aria-describedby="red-text" value=255 id="red-input">
+                        <div style="margin: 0.5vh;"></div>
+                        <span class="input-group-text" id="green-text">G</span>
+                        <input type="number" class="form-control" placeholder="Green" aria-label="Green" aria-describedby="green-text" value=0 id="green-input">
+                        <div style="margin: 0.5vh;"></div>
+                        <span class="input-group-text" id="blue-text">B</span>
+                        <input type="number" class="form-control" placeholder="Blue" aria-label="Blue" aria-describedby="blue-text" value=0 id="blue-input">
+
+                    </div>
+                </div>
+
+                <!-- Configuration du temps d'allumage -->
+                <div class="form-group">
+                    <label for="turn-on-inputimer-input">Temps d'allumage (en secondes) :</label>
+                    <input type="number" class="form-control" id="turn-on-input" placeholder="Entrer le temps d'allumage">
+                </div>
+
+                <!-- Configuration du minuteur -->
+                <div class="form-group">
+                    <label for="timer-input">Minuteur du temps restant allumé (en secondes) :</label>
+                    <input type="number" class="form-control" id="timer-input" placeholder="Entrer le minuteur">
+                </div>
+
+                <!-- Boutons d'actions -->
+                <div class="text-center container row">
+                    <button class="btn btn-success mr-2 col-lg-custom" style="margin: 0.2vh;" id="save-config">Sauvegarder la configuration</button>
+                    <button class="btn btn-primary mr-2 col-lg-custom" style="margin: 0.2vh;" id="test-config">Tester la configuration sauvegardée</button>
+                    <button class="btn btn-primary col-lg-custom" style="margin: 0.2vh;" id="test-color">Tester la couleur</button>
+                    <button class="btn btn-secondary col-lg-custom" style="margin: 0.2vh;" id="color-off">Eteindre leds</button>
+                </div>
+            </div>
+        </div>
+    </body>
+    <footer>
+        <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+
+        <script src="/dist/octopus-app/bundle.js"></script>
+        <script src="/ui/lib/WebApp.js"></script>
+        <script src="led-strip.js"></script>
+    </footer>
+</html>

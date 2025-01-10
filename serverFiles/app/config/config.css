@@ -1,0 +1,15 @@
+:root {
+    font-size: 1em;
+}
+
+.form-control {
+    font-size: inherit;
+}
+
+span {
+    font-size: inherit;
+}
+
+@media (min-width: 1200px) {
+    font-size: inherit;
+}

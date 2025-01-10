@@ -1,88 +1,126 @@
-var appId = undefined;
-var webApp = undefined;
+var statusElem = document.getElementById("octopus-status");
+statusElem.innerText = "Initializing ...";
 
-// var configTree = undefined;
+var webApp = new WebOctopusApp();
+var appMap = {};
+webApp.oninit = () => {
+    statusElem.innerText = "Connected !";
+    refreshAppList();
+};
+
 var editor = undefined;
+var currAppId = undefined;
 
-function setup() {
-    const url = new URL(window.location.href);
-    appId = url.searchParams.get("appId");
+document.getElementById("refresh-btn").onclick = refreshAppList;
+document.getElementById("edit-btn").onclick = () => {
+    if (document.getElementById("app-select").value != "")
+        fetchConfigSchema(document.getElementById("app-select").value);
+    else
+        statusElem.innerText = `Invalid selection`;
+};
+document.getElementById("save-btn").onclick = saveConfig;
 
-    let configAreaElem = document.getElementById("configArea");
+fetch("/api/websocketPort", {
+        method: "POST"
+    }).then(async (res) => {
+        let port = await res.text();
+        console.log(port);
+        webApp.connect(`ws://${window.location.hostname}:${port}`);
+    });
+// document.getElementById("addressInput").value = `ws://${window.location.hostname}:8000`
 
-    if(!appId) {
-        configAreaElem.value = "Error : No id in query string"
-        return;
+async function refreshAppList() {
+    statusElem.innerText = "Getting app list";
+
+    document.getElementById("refresh-btn").disabled = true;
+    document.getElementById("edit-btn").disabled = true;
+    try {
+        let appList = (await webApp.getAppList()).content;
+        appMap = {};
+
+        let selectElem = document.getElementById("app-select");
+        selectElem.innerText = "";
+        for (let app of appList) {
+            if(app.type != "WebApp") {
+                let option = document.createElement("option");
+                option.value = app.id;
+                option.innerText = `${app.type} - `;
+                if (app.desc)
+                    option.innerText += app.desc;
+                selectElem.appendChild(option);
+            }
+            
+            appMap[app.id] = app;
+        }
+
+        statusElem.innerText = "App list updated";
+    } catch (e) {
+        statusElem.innerHTML = `Could not update app list : ${e}`;
+    } finally {
+        document.getElementById("refresh-btn").disabled = false;
+        document.getElementById("edit-btn").disabled = false;
     }
-    
-    document.getElementById("appId").innerHTML = appId;
-
-    const octopusUrl = window.localStorage.getItem("octopusAddress");
-    
-    if(!octopusUrl) {
-        configAreaElem.value = "Error : octopusAddress is not set in local storage => Cannot connect to StreamOctopus";
-        return;
-    }
-
-    webApp = new WebOctopusApp();
-    webApp.oninit = fetchConfigSchema;
-    webApp.connect(octopusUrl);
 }
 
-function fetchConfigSchema() {
-    webApp.sendCore({
-        type: "getapp",
-        appId: appId
-    }, true).then((message) => {
-        let app = message.content;
-        if (app == {}) {
-            document.getElementById("appType").innerHTML = "ERROR";
-            console.error("Could not get app infos");
-        } else {
-            document.getElementById("appType").innerHTML = app.type;
-            document.getElementById("appDesc").innerHTML = app.desc;
-        }
-    });
+async function fetchConfigSchema(appId) {
+    currAppId = appId;
+    document.getElementById("save-div").hidden = true;
 
     webApp.sendDirect(appId, {
         request: "getConfigSchema",
     }, true).then((message) => {
-        // document.getElementById("configArea").value = JSON.stringify(message.content.configSchema);
-        // configTree = new ConfigTree(message.content.configSchema);
-        editor = new JSONEditor(document.getElementById("configDiv"), {  schema: message.content.configSchema, theme: 'bootstrap4' });
+        if (editor !== undefined) {
+            editor.destroy();
+        }
+
+        editor = new JSONEditor(document.getElementById("config-div"), {
+            schema: message.content.configSchema, 
+            theme: 'bootstrap4' 
+        });
+        
         editor.on("ready", () => {
-            fetchConfig();
+            fetchConfig(appId);
         });
     }).catch((err) => {
         if(typeof(err) == "string")
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config schema : ${err}`;
+            statusElem.innerText = `Could not get app config schema : ${err}`;
         else 
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config schema : ${JSON.stringify(err)}`;
+            statusElem.innerText = `Could not get app config schema : ${JSON.stringify(err)}`;
     });
 }
 
-function fetchConfig() {
+function fetchConfig(appId) {
     webApp.sendDirect(appId, {
         request: "getConfig",
     }, true).then((message) => {
-            // document.getElementById("configArea").value = JSON.stringify(message.content.configSchema);
-        // configTree.fill(message.content.config);
-        // document.getElementById("configDiv").appendChild(configTree.render());
+        if (editor === undefined)
+            throw new Error("editor === undefined !!");
+
         editor.setValue(message.content.config);
-    }).catch((err) => {
+        document.getElementById("save-div").hidden = false;
+   }).catch((err) => {
         if(typeof(err) == "string")
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config : ${err}`;
+            statusElem.innerText = `Could not get app config : ${err}`;
         else 
-            document.getElementById("errorDiv").innerHTML =  `Could not get app config : ${JSON.stringify(err)}`;
+            statusElem.innerText = `Could not get app config : ${JSON.stringify(err)}`;
     });
 }
 
-function writeConfig() {
+function saveConfig() {
+    if (currAppId === undefined || editor === undefined) {
+        return;
+    }
+
+    document.getElementById("save-icon").innerText = ""; 
+
     console.log(editor.getValue());
-    webApp.sendDirect(appId, {
+    webApp.sendDirect(currAppId, {
         request: "setConfig",
         config: editor.getValue()
     }, false);
+    
+    setTimeout(() => {
+        document.getElementById("save-icon").innerText = "✅";
+    }, 300);
 }
 
-setup();

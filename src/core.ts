@@ -46,9 +46,12 @@ export class Core {
         
         this.httpApp.use("/ui", express.static("serverFiles/app"));
         this.httpApp.use("/dist", express.static("serverFiles/dist"));
+        this.httpApp.get("/", (req, res) => {
+            res.redirect("/ui/index.html");
+        });
 
         this.httpApp.post("/api/websocketPort", (req, res) => {
-            res.send(this.wsPort);
+            res.send(`${this.wsPort}`);
         });
         
         this.httpApp.post("/api/direct", (req, res) => {

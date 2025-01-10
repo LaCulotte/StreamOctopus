@@ -39,8 +39,7 @@ export class App {
 
     onMessage(msgEvent : WebSocket.MessageEvent) {
         try {
-            logger.info("New message : ");
-            logger.info(msgEvent.data.toString());
+            logger.info(`New message : ${msgEvent.data.toString()}`);
             let message = JSON.parse(msgEvent.data.toString());
 
             // TODO : Check for id
